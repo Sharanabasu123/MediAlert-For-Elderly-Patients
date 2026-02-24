@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ t('Report') }}</h2>
+
+<form id="reportForm" method="post" class="form-box">
+
+    <label for="patientSelect">{{ t('Select Patient') if t('Select Patient') else 'Select Patient' }}:</label>
+    <select id="patientSelect" name="patient_id" required>
+        {% for p in patients %}
+        <option value="{{ p.patient_id }}">{{ p.patient_id }} - {{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="recipientName">{{ t('Recipient Name') if t('Recipient Name') else 'Recipient Name' }}:</label>
+    <input id="recipientName" type="text" name="recipient_name" required>
+
+    <label for="recipientEmail">{{ t('Recipient Email') if t('Recipient Email') else 'Recipient Email' }}:</label>
+    <input id="recipientEmail" type="email" name="recipient_email" required>
+
+    <label for="periodSelect">{{ t('Report Type') if t('Report Type') else 'Report Type' }}:</label>
+    <select id="periodSelect" name="period">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+    </select>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">{{ t('Send') }}</button>
+    </div>
+</form>
+
+<hr>
+<h3>Patient Chart</h3>
+<label for="chartPatient">{{ t('Select Patient to view chart') if t('Select Patient to view chart') else 'Select Patient to view chart' }}:</label>
+<select id="chartPatient" aria-label="Select patient for chart">
+    {% for p in patients %}
+    <option value="{{ p.patient_id }}">{{ p.patient_id }} - {{ p.name }}</option>
+    {% endfor %}
+</select>
+<canvas id="reportChart" width="600" height="250"></canvas>
+
+<h3>Rate this page</h3>
+<div id="ratingBox">
+    <label>Your Email (optional):</label>
+    <input type="email" id="ratingEmail" placeholder="you@example.com">
+    <label>Rating:</label>
+    <div id="stars">
+        <button type="button" class="star" aria-label="1 star" data-val="1">☆</button>
+        <button type="button" class="star" aria-label="2 stars" data-val="2">☆</button>
+        <button type="button" class="star" aria-label="3 stars" data-val="3">☆</button>
+        <button type="button" class="star" aria-label="4 stars" data-val="4">☆</button>
+        <button type="button" class="star" aria-label="5 stars" data-val="5">☆</button>
+    </div>
+    <textarea id="ratingComment" rows="2" placeholder="Optional comment"></textarea>
+    <button type="button" id="submitRating">Submit Rating</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    // Chart drawing with safety checks
+    async function drawChart(pid){
+        if (!pid) return;
+        try{
+            const res = await fetch('/api/chart/'+encodeURIComponent(pid));
+            const d = await res.json();
+            const canvas = document.getElementById('reportChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (window._reportChart) window._reportChart.destroy();
+            window._reportChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Taken','Missed','Future'],
+                    datasets: [{ label: 'Medicines', data: [d.taken, d.missed, d.future], backgroundColor: ['green','red','blue'] }]
+                },
+                options: {scales:{y:{beginAtZero:true}}}
+            });
+        }catch(e){ console.log('chart error', e); }
+    }
+
+    const chartSel = document.getElementById('chartPatient');
+    if (chartSel) {
+        chartSel.addEventListener('change', function(){ drawChart(this.value); });
+        setTimeout(()=> drawChart(chartSel.value), 200);
+    }
+
+    // Rating handlers
+    let chosen = 0;
+    document.querySelectorAll('#stars .star').forEach(b=> b.addEventListener('click', function(){
+        chosen = parseInt(this.dataset.val);
+        document.querySelectorAll('#stars .star').forEach(s=> s.textContent = (parseInt(s.dataset.val) <= chosen) ? '★' : '☆');
+    }));
+    const submitRating = document.getElementById('submitRating');
+    if (submitRating) submitRating.addEventListener('click', async function(){
+        if (!chosen) { alert('Please choose rating'); return; }
+        const payload = {page:'report', rating: chosen, comment: document.getElementById('ratingComment').value, email: document.getElementById('ratingEmail').value};
+        try{
+            const res = await fetch('/rate', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+            const j = await res.json();
+            if (j.ok) { alert('Thanks for rating'); document.getElementById('ratingComment').value=''; }
+            else alert('Error saving rating');
+        }catch(e){ alert('Network error'); }
+    });
+
+    // Report form AJAX submit to get immediate JSON response and trigger alerts
+    const reportForm = document.getElementById('reportForm');
+    if (reportForm){
+        reportForm.addEventListener('submit', async function(ev){
+            ev.preventDefault();
+            const formData = new FormData(reportForm);
+            const payload = {};
+            formData.forEach((v,k)=> payload[k]=v);
+            // basic client validation
+            if (!payload.recipient_name || !payload.recipient_email){ alert('Please enter recipient name and email'); return; }
+            try{
+                const res = await fetch(reportForm.action || window.location.pathname, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body: formData});
+                // server returns JSON for XHR
+                const j = await res.json();
+                if (j.ok){
+                    const msg = j.message || ('Report sent to '+(j.recipient||''));
+                    try{ if (typeof showFullScreenAlert === 'function') showFullScreenAlert('Report Sent', msg); } catch(e){}
+                    try{ if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg)); } catch(e){}
+                    alert(msg);
+                    // optionally clear form
+                    // reportForm.reset();
+                } else {
+                    alert('Error sending report: '+(j.error||'unknown'));
+                }
+            }catch(e){ console.log(e); alert('Network or server error sending report'); }
+        });
+    }
+});
+</script>
+
+{% endblock %}

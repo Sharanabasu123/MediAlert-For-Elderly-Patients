@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Add Medicine</h2>
+<p class="muted-note">Add a medication schedule for the patient. Use the time selector and optional AM/PM override. Click "Enable sound alerts" to allow browser audio for on-screen alarms.</p>
+
+<form method="POST" action="{{ url_for('add_medicine') }}" class="form-box">
+
+    <label for="patientSelect">Patient ID</label>
+    <select id="patientSelect" name="patient_id" required title="Select patient">
+        <option value="">-- Select Patient --</option>
+        {% for p in patients %}
+            <option value="{{ p.patient_id }}">{{ p.patient_id }} - {{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="nameField">Medicine Name</label>
+    <input id="nameField" type="text" name="name" required title="Medicine name" placeholder="e.g., Paracetamol">
+
+    <label for="doseField">Dose</label>
+    <input id="doseField" type="text" name="dose" required title="Dose information" placeholder="e.g., 500mg">
+
+    <div class="two-col">
+        <div>
+            <label for="startDate">Start Date</label>
+            <input id="startDate" type="date" name="start_date" required title="Start date">
+        </div>
+        <div>
+            <label for="endDate">End Date</label>
+            <input id="endDate" type="date" name="end_date" required title="End date">
+        </div>
+    </div>
+
+    <label for="timeField">Time</label>
+    <div class="time-row">
+        <input id="timeField" class="time-input" type="time" name="time" required title="Scheduled time">
+        <select class="ampm-select" name="ampm" title="AM or PM selector (optional)">
+            <option value="">(auto)</option>
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+        </select>
+    </div>
+
+    <label for="frequency">Frequency</label>
+    <select id="frequency" name="frequency" title="Frequency of the medicine">
+        <option value="daily">Daily</option>
+        <option value="interval">Specific Days</option>
+    </select>
+
+    <label>Choose Days (Optional)</label>
+    <div class="days">
+        <label><input type="checkbox" name="days" value="Mon">Mon</label>
+        <label><input type="checkbox" name="days" value="Tue">Tue</label>
+        <label><input type="checkbox" name="days" value="Wed">Wed</label>
+        <label><input type="checkbox" name="days" value="Thu">Thu</label>
+        <label><input type="checkbox" name="days" value="Fri">Fri</label>
+        <label><input type="checkbox" name="days" value="Sat">Sat</label>
+        <label><input type="checkbox" name="days" value="Sun">Sun</label>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save Medicine</button>
+        <span class="muted-note">You can edit this medicine later from the dashboard.</span>
+    </div>
+
+</form>
+
+    <div class="enable-sound">
+        <button id="enableSoundBtn" class="small">Enable sound alerts</button>
+        <button id="testAlertBtn" class="small test-btn">Test Alert</button>
+    </div>
+
+    <script>
+        // Ensure the global pollers in static/js/alerts.js run immediately on this page
+        (function(){
+            // call pollers once immediately
+            try{ if (typeof checkMedicines === 'function') checkMedicines(); }catch(e){}
+            try{ if (typeof checkFullScreenAlerts === 'function') checkFullScreenAlerts(); }catch(e){}
+
+            // Enable audio via a user gesture so autoplay restrictions are less likely to block future alerts
+            const btn = document.getElementById('enableSoundBtn');
+            if (btn){
+                btn.addEventListener('click', function(ev){
+                    try{
+                        // create a short speech utterance to unlock speech and audio
+                        if ('speechSynthesis' in window){
+                            window.speechSynthesis.cancel();
+                            window.speechSynthesis.speak(new SpeechSynthesisUtterance('Sound enabled for Medi Alert'));
+                        }
+                        // also try to create and play the alert audio once
+                        if (window.alertAudio){
+                            window.alertAudio.currentTime = 0;
+                            window.alertAudio.play().then(()=> window.alertAudio.pause()).catch(()=>{});
+                        } else {
+                            try{
+                                const a = new Audio('/static/audio/alert.mp3');
+                                a.preload = 'auto';
+                                a.play().then(()=> a.pause()).catch(()=>{});
+                                window.alertAudio = a;
+                            }catch(e){}
+                        }
+                    }catch(e){ console.log('enable sound err', e); }
+                    // hide button after click
+                    btn.style.display = 'none';
+                });
+            }
+
+            // Speak a short confirmation when the form is submitted (before navigation)
+            const form = document.querySelector('form.formbox');
+            if (form){
+                form.addEventListener('submit', function(){
+                    try{
+                        if ('speechSynthesis' in window){
+                            window.speechSynthesis.cancel();
+                            window.speechSynthesis.speak(new SpeechSynthesisUtterance('Saving medicine'));
+                        }
+                    }catch(e){ }
+                });
+            }
+
+            // Test Alert button: triggers the same full-screen + voice alert locally
+            const testBtn = document.getElementById('testAlertBtn');
+            if (testBtn){
+                testBtn.addEventListener('click', function(){
+                    try{
+                        if (typeof showFullScreenAlert === 'function'){
+                            showFullScreenAlert('Test Medicine', '500mg', '9:00 AM');
+                        }
+                        // speak a short phrase as well
+                        if ('speechSynthesis' in window){
+                            window.speechSynthesis.cancel();
+                            window.speechSynthesis.speak(new SpeechSynthesisUtterance('This is a test medicine alert'));
+                        }
+                    }catch(e){ console.log('test alert err', e); }
+                });
+            }
+        })();
+    </script>
+
+{% endblock %}

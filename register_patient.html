@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{{ t('Register Patient') }}</h2>
+
+<div class="card">
+  <form method="post" class="form-box">
+
+      <label for="nameField">{{ t('Name') }}:</label>
+      <input id="nameField" type="text" name="name" required placeholder="Full name">
+
+      <label for="emailField">{{ t('Email') }}:</label>
+      <input id="emailField" type="email" name="email" required placeholder="you@example.com">
+
+      <label for="passwordField">{{ t('Password') }}:</label>
+      <input id="passwordField" type="password" name="password" required placeholder="Choose a secure password">
+
+      <label for="phoneField">{{ t('Phone') }}:</label>
+      <input id="phoneField" type="text" name="phone" required placeholder="Mobile or contact number">
+
+      <label for="ageField">{{ t('Age') }}:</label>
+      <input id="ageField" type="number" name="age" required min="0">
+
+      <label for="genderField">{{ t('Gender') }}:</label>
+      <select id="genderField" name="gender" required>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+      </select>
+
+      <div class="rating-inline">
+          <div class="rating-label">{{ t('Register') }} {{ t('Send') }}:</div>
+          <div id="reg-patient-stars">
+              <button type="button" class="star" data-val="1">☆</button>
+              <button type="button" class="star" data-val="2">☆</button>
+              <button type="button" class="star" data-val="3">☆</button>
+              <button type="button" class="star" data-val="4">☆</button>
+              <button type="button" class="star" data-val="5">☆</button>
+          </div>
+      </div>
+
+      <input type="hidden" name="onboarding_rating" id="reg-patient-rating" value="0">
+
+      <div class="form-actions">
+          <button type="submit" class="btn-primary">{{ t('Send OTP') }}</button>
+      </div>
+  </form>
+</div>
+
+{% endblock %}

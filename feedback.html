@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ t('Feedback') }}</h2>
+
+<form method="post" class="form-box">
+
+    <label for="fb-name">Name:</label>
+    <input id="fb-name" type="text" name="name" required title="Your name" placeholder="Full name">
+
+    <label for="fb-email">Email:</label>
+    <input id="fb-email" type="email" name="email" required title="Your email" placeholder="you@example.com">
+
+    <label for="fb-phone">Phone:</label>
+    <input id="fb-phone" type="text" name="phone" required title="Phone number" placeholder="+91XXXXXXXXXX">
+
+    <label for="fb-message">Message:</label>
+    <textarea id="fb-message" name="message" rows="4" required title="Feedback message" placeholder="Write your feedback here..."></textarea>
+
+    <label>Rating (optional):</label>
+    <div id="fb-stars">
+        <button type="button" class="star" data-val="1">☆</button>
+        <button type="button" class="star" data-val="2">☆</button>
+        <button type="button" class="star" data-val="3">☆</button>
+        <button type="button" class="star" data-val="4">☆</button>
+        <button type="button" class="star" data-val="5">☆</button>
+    </div>
+    <input type="hidden" name="rating" id="fb-rating" value="0">
+
+    <button type="submit">{{ t('Send') }}</button>
+
+</form>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+      let fbChosen = 0;
+      document.querySelectorAll('#fb-stars .star').forEach(b=> b.addEventListener('click', function(){
+          fbChosen = parseInt(this.dataset.val);
+          const hf = document.getElementById('fb-rating'); if (hf) hf.value = fbChosen;
+          document.querySelectorAll('#fb-stars .star').forEach(s=> s.textContent = (parseInt(s.dataset.val) <= fbChosen) ? '★' : '☆');
+      }));
+  });
+  </script>
+
+{% endblock %}

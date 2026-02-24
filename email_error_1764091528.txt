@@ -1,0 +1,17 @@
+ERROR: _ssl.c:989: The handshake operation timed out
+TO: sharanabasupolicepatil@gmail.com
+SUBJECT: MediAlert: praveen - dolo 650 - TAKEN
+
+Patient ID: P7758
+Patient Name: praveen
+Caretaker(s): 
+Medicine: dolo 650
+Medicine ID: M3057
+Dose: 1
+Date: 2025-11-25
+Time: 19:45
+Day: Tuesday
+Event: TAKEN
+Instruction: If missed, contact caretaker immediately.
+Instruction: Store medicines safely and follow schedule.
+Instruction: For emergencies call provided numbers on Emergency page.

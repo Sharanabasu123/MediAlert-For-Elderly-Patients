@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<marque><h1>Welcome to MediAlert</h1></marque>
+
+<h2>{{ t('Profile') }} - {{ caretaker.name if caretaker else '' }}</h2>
+
+{% if caretaker %}
+<div class="profile-box">
+    <strong>{{ caretaker.name }} ({{ caretaker.caretaker_id }})</strong><br>
+    Email: {{ caretaker.email }}<br>
+    Phone: {{ caretaker.phone }}
+</div>
+{% endif %}
+
+{% if patient %}
+<h3>{{ t('Patient Profile') }}</h3>
+<div class="card">
+    <strong>{{ patient.name }} ({{ patient.patient_id }})</strong>
+    <div class="muted-note">Email: {{ patient.email }} &nbsp; • &nbsp; Phone: {{ patient.phone }}</div>
+    </div>
+{% endif %}
+
+<h3>Medicines</h3>
+
+<div class="med-list">
+    {% for m in meds %}
+    <div class="med-card">
+        <h4>{{ m.name }} <small class="muted-note">({{ m.med_id }})</small></h4>
+        <div><strong>Dose:</strong> {{ m.dose }}</div>
+        <div><strong>Start:</strong> {{ m.start_date or '-' }} &nbsp; <strong>End:</strong> {{ m.end_date or '-' }}</div>
+        <div><strong>Time:</strong> {{ m.time or '-' }} &nbsp; <strong>Frequency:</strong> {{ m.frequency or '-' }}</div>
+        <div class="med-actions">
+            <button type="button" class="take" data-med='{{ m|tojson|e }}' onclick="preConfirmMedicineFromEl(this, 'taken')">{{ t('Taken') }}</button>
+            <button type="button" class="miss" data-med='{{ m|tojson|e }}' onclick="preConfirmMedicineFromEl(this, 'missed')">{{ t('Missed') }}</button>
+            <button type="button" class="del" onclick="if(confirm('Delete this medicine?')) medicineAction('{{ m.med_id }}','delete')">Delete</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="add-medicine"><a href="{{ url_for('add_medicine') }}" class="link-btn">{{ t('Add Medicine') }}</a></div>
+
+<h3>Medicine Statistics</h3>
+
+<canvas id="chartCanvas"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+fetch("/api/chart/{{ patient.patient_id }}")
+  .then(res => res.json())
+  .then(data => {
+      new Chart(document.getElementById("chartCanvas"), {
+          type: "line",
+          data: {
+              labels: ["Taken", "Missed", "Future"],
+              datasets: [{
+                  data: [data.taken, data.missed, data.future],
+                  borderColor: ["green", "red", "blue"]
+              }]
+          }
+      });
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Profile</h2>
+<div>
+  <p>Name: {{ profile.name }}</p>
+  <p>ID: {{ profile.id }}</p>
+  <p>Email: {{ profile.email }}</p>
+  <p>Role: {{ profile.role }}</p>
+  <p>Password (hashed): {{ profile.get('password') }}</p>
+</div>
+{% endblock %}

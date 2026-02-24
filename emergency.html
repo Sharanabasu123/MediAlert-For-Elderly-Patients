@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ t('Emergency') }}</h2>
+
+<h3>Important Contacts</h3>
+
+<div class="important-list">{% for item in important %}<div class="imp-item"><a href="{{ item.href }}">{{ item.name }} — {{ item.phone }}</a></div>{% endfor %}</div>
+
+<h3>Send Emergency Alert</h3>
+
+<form method="post" class="form-box">
+    <label for="em-msg">Message:</label>
+    <textarea id="em-msg" name="message" rows="4" title="Emergency message" placeholder="Describe the emergency..." required></textarea>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Send Emergency</button>
+    </div>
+</form>
+
+{% endblock %}

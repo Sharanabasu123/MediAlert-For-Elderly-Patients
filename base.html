@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>MediAlert</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="{{ url_for('static', filename='js/alerts.js') }}" defer></script>
+
+    {# bottom-nav styles moved to static/css/style.css #}
+</head>
+
+<body>
+
+<nav class="topbar">
+    <div class="logo">MediAlert</div>
+    <div class="avatar">
+        {% if session.get('user') %}
+            {% set u = session.get('user') %}
+            {% if u.get('photo') %}
+                <img src="{{ u.get('photo') }}" alt="avatar" class="avatar-img">
+            {% else %}
+                <div class="avatar-initials">{{ (u.get('name')[:1] if u.get('name') else 'U')|upper }}</div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="menu">
+        <a href="{{ url_for('set_lang', lang='en') }}">EN</a>
+        <a href="{{ url_for('set_lang', lang='kn') }}">ಕನ್ನಡ</a>
+
+        <a href="{{ url_for('about') }}">{{ t('About') }}</a>
+        <a href="{{ url_for('report') }}">{{ t('Report') }}</a>
+        <a href="{{ url_for('profile') }}">{{ t('Profile') }}</a>
+        <a class="emergency-link" href="{{ url_for('emergency') }}">{{ t('Emergency') }}</a>
+        <a href="{{ url_for('feedback') }}">{{ t('Feedback') }}</a>
+
+        {% if session.get('user') %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for cat, msg in messages %}
+                <div class="flash {{ cat }}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<!-- ===========================
+     Bottom Buttons: HOME/BACK/NEXT
+=========================== -->
+<div class="bottom-nav">
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="javascript:history.back()">Back</a>
+
+    {# Next button logic: if user logged in, send them to dashboard #}
+    {% if session.get('user') %}
+        {% if session.get('user').role == 'patient' %}
+            <a href="{{ url_for('patient_dashboard') }}">Next</a>
+        {% else %}
+            <a href="{{ url_for('caretaker_dashboard') }}">Next</a>
+        {% endif %}
+    {% else %}
+        <a href="{{ url_for('login') }}">Next</a>
+    {% endif %}
+</div>
+
+<!-- client-side hook: if a 'report' flash exists, trigger full-screen and voice alert -->
+<script>
+    (function(){
+        // run after alerts.js defines showFullScreenAlert
+        function tryRun(){
+            var el = document.querySelector('.flash.report');
+            if (!el) return;
+            var msg = el.textContent || el.innerText || '';
+            // wait for showFullScreenAlert to be present
+            function doAlert(){
+                if (typeof showFullScreenAlert === 'function'){
+                    try{ showFullScreenAlert('Report Sent', msg); } catch(e){ console.log(e); }
+                    try{
+                        if ('speechSynthesis' in window){ window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg)); }
+                    }catch(e){ console.log('speech err', e); }
+                } else {
+                    setTimeout(doAlert, 250);
+                }
+            }
+            doAlert();
+        }
+        // run on DOMContentLoaded to ensure flash elements exist
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tryRun);
+        else tryRun();
+    })();
+</script>
+
+</body>
+</html>

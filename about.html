@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+	<div class="about-hero card">
+		<h1>About MediAlert</h1>
+		<p class="lead">MediAlert helps patients and caregivers manage medication schedules reliably. It combines timely reminders, clear on-screen and audible alerts, and caregiver reporting so families can reduce missed doses and act quickly when something goes wrong.</p>
+	</div>
+
+	<div class="about-section card">
+		<h3>Overview</h3>
+		<p>MediAlert is a lightweight medication management platform built for home and caregiver workflows. It gives patients simple, accessible prompts at scheduled times and provides caretakers with consolidated reports, notifications, and easy ways to monitor adherence. The platform is intentionally low-friction to encourage adoption: minimal setup, clear alerts, and fallback delivery to an outbox when SMTP or external services are not configured.</p>
+	</div>
+
+	<div class="about-section card">
+		<h3>Why this project matters</h3>
+		<p>Missed or incorrect doses are a common cause of avoidable harm, especially among older adults and people with complex medication regimens. By combining scheduled reminders, audible repetition, and a visual full-screen prompt at the scheduled time, MediAlert increases the chance that time-sensitive medications are taken correctly. Caretakers receive timely summaries and action notifications so they can step in when needed.</p>
+	</div>
+
+	<div class="about-section card">
+		<h3>Advantages</h3>
+		<ul class="about-list">
+			<li><strong>Simple setup:</strong> Works with a basic account and a small device — no complex integrations required.</li>
+			<li><strong>Multi-channel alerts:</strong> On-screen full-screen notices, repeated audible alerts, and plain-text emails (or SMS via gateway) ensure messages reach recipients.</li>
+			<li><strong>Caregiver visibility:</strong> Consolidated reports and immediate action notifications keep caretakers informed.</li>
+			<li><strong>Privacy conscious:</strong> Data is stored locally in the app database and role-based access limits exposure of patient details.</li>
+			<li><strong>Resilient delivery:</strong> Email fallback to an `outbox/` file preserves messages when SMTP is not configured.</li>
+			<li><strong>Accessible:</strong> Clear typography, large buttons, and repeatable audio make the app usable for people with diverse needs.</li>
+		</ul>
+	</div>
+
+	<div class="about-section card">
+		<h3>Key features</h3>
+		<div class="advantage-grid">
+			<div class="advantage-card"><strong>Scheduled reminders</strong><p>Reminders sent at 5 minutes, 1 minute, and on-time to reduce missed doses.</p></div>
+			<div class="advantage-card"><strong>Full-screen alerts</strong><p>On-time reminders show a visual overlay that is hard to miss.</p></div>
+			<div class="advantage-card"><strong>Repeated audio</strong><p>Audible alerts repeat to overcome brief distractions or device sleep.</p></div>
+			<div class="advantage-card"><strong>Reports</strong><p>Daily/weekly adherence summaries for caretakers, exportable via email.</p></div>
+			<div class="advantage-card"><strong>Action logging</strong><p>Taken/missed actions are logged with the actor and time for audit and review.</p></div>
+			<div class="advantage-card"><strong>Emergency alerts</strong><p>Quick emergency page sends messages to assigned caretakers immediately.</p></div>
+		</div>
+	</div>
+
+	<div class="about-section card">
+		<h3>Getting started</h3>
+		<ol>
+			<li>Create a patient account and add basic contact details.</li>
+			<li>Add medicines with schedule times (use the AM/PM helper if needed).</li>
+			<li>Enable sound alerts from your device and test using the "Test Alert" button on the medicine form.</li>
+			<li>Add caretakers so they receive reports and notifications.</li>
+		</ol>
+		<p class="muted-note">Need help? Use the <a href="{{ url_for('feedback') }}">Feedback</a> page or the <a href="{{ url_for('emergency') }}">Emergency</a> page for urgent notifications.</p>
+	</div>
+</div>
+
+{% endblock %}

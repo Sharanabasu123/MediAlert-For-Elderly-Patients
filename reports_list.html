@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Reports</h2>
+
+<table class="med-table">
+    <tr><th></th><th>Report ID</th><th>Patient ID</th><th>Taken</th><th>Missed</th><th>Date</th></tr>
+    {% for r in reports %}
+    <tr>
+        <td class="dots-cell"><button type="button" class="dots-btn" aria-label="More report actions" data-pid="{{ r.patient_id }}">⋮</button></td>
+        <td>{{ r.report_id }}</td>
+        <td>{{ r.patient_id }}</td>
+        <td>{{ r.taken_meds }}</td>
+        <td>{{ r.missed_meds }}</td>
+        <td>{{ r.date }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<!-- Modal -->
+<div id="reportModal" class="modal-overlay" role="dialog" aria-hidden="true">
+    <div class="modal-box" role="document">
+        <button type="button" class="modal-close" aria-label="Close" onclick="document.getElementById('reportModal').style.display='none'">Close</button>
+        <h3 id="modalPatientName">Patient Details</h3>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.dots-btn').forEach(b=> b.addEventListener('click', async function(){
+        const pid = this.dataset.pid;
+        try{
+            const res = await fetch('/api/report_details/'+encodeURIComponent(pid));
+            const data = await res.json();
+            let html = `<h4>Patient</h4><table class='med-table'>`;
+            html += `<tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th></tr>`;
+            html += `<tr><td>${data.patient.patient_id}</td><td>${data.patient.name}</td><td>${data.patient.email||''}</td><td>${data.patient.phone||''}</td></tr>`;
+            html += `</table>`;
+            html += `<h4>Caretakers</h4><table class='med-table'><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th></tr>`;
+            (data.caretakers||[]).forEach(ct=>{ html += `<tr><td>${ct.caretaker_id}</td><td>${ct.name}</td><td>${ct.email||''}</td><td>${ct.phone||''}</td></tr>`; });
+            html += `</table>`;
+            html += `<h4>Medicines</h4><table class='med-table'><tr><th>Med ID</th><th>Name</th><th>Dose</th><th>Time</th></tr>`;
+            (data.medicines||[]).forEach(m=>{ html += `<tr><td>${m.med_id}</td><td>${m.name}</td><td>${m.dose}</td><td>${m.time||''}</td></tr>`; });
+            html += `</table>`;
+            const modalContent = document.getElementById('modalContent');
+            if (modalContent) modalContent.innerHTML = html;
+            const modal = document.getElementById('reportModal');
+            if (modal) modal.style.display='block';
+        }catch(e){ console.log('Error loading report details', e); alert('Could not load details'); }
+    }));
+});
+</script>
+
+{% endblock %}

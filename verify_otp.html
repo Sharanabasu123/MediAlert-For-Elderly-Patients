@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ t('Verify OTP') }}</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for cat, msg in messages %}
+            <div class="flash-card">{{ msg }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<p>OTP sent to: <b>{{ email or '' }}</b></p>
+
+<form method="post" action="{{ url_for('verify_otp') }}" class="form-box">
+        <input type="hidden" name="role" value="{{ role }}">
+        {% if email %}<input type="hidden" name="email" value="{{ email }}">{% endif %}
+
+        <label for="otp_input">Enter OTP</label>
+        <input id="otp_input" class="otp-input" type="text" name="otp" required maxlength="8" inputmode="numeric" autocomplete="one-time-code" placeholder="Enter the 6-digit OTP" autofocus>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">{{ t('Verify OTP') }}</button>
+        </div>
+</form>
+{% endblock %}
