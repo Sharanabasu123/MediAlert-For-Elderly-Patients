@@ -199,22 +199,38 @@ def init_db():
 
 def ensure_feedback_email_column():
     """Ensure the `feedback` table contains an `email` column. Safe to run multiple times."""
+    conn = None
     try:
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("PRAGMA table_info(feedback)")
-        cols = [r[1] for r in cur.fetchall()]
-        if 'email' not in cols:
-            cur.execute("ALTER TABLE feedback ADD COLUMN email TEXT")
-            conn.commit()
-        try:
-            conn.close()
-        except Exception:
-            pass
-    except Exception as e:
-        # don't crash startup for migration hiccups; print for diagnostics
-        print('Feedback column migration error:', e)
 
+        cur.execute("PRAGMA table_info(feedback)")
+        cols = []
+        for row in cur.fetchall():
+            try:
+                cols.append(row["name"])
+            except:
+                cols.append(row[1])
+
+        if "email" not in cols:
+            try:
+                cur.execute("ALTER TABLE feedback ADD COLUMN email TEXT")
+                conn.commit()
+                print("✅ Feedback email column added")
+            except Exception as inner_error:
+                print("⚠️ Column already exists or issue:", inner_error)
+        else:
+            print("✅ Feedback email column already exists")
+
+    except Exception as e:
+        print("⚠️ Feedback migration handled safely:", e)
+
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
 # initialize DB and ensure migrations
 init_db()
 ensure_feedback_email_column()
