@@ -1,42 +1,49 @@
 {% extends "base.html" %}
 {% block content %}
+
 <marquee>
   <h1 style="color: red; font-weight: bold;">Welcome to MediAlert</h1>
 </marquee>
+
 <h2>{{ t('Login') }}</h2>
 
 <div class="two-col">
-        <div class="instructions">
+
+    <div class="instructions">
         <h3>{{ t('Patient Instructions') }}</h3>
         <p class="rating-label">{{ t('Need Help Note') }}</p>
         <ul>
-            <li>{{ t('Instruction1') if t('Instruction1') else 'Keep your account details secure and share login only with trusted caretakers.' }}</li>
-            <li>{{ t('Instruction2') if t('Instruction2') else 'Ensure your medication schedule (time and dose) is accurate when adding medicines.' }}</li>
-            <li>{{ t('Instruction3') if t('Instruction3') else 'Allow browser audio and notifications for reliable voice and on-screen alerts.' }}</li>
-            <li>{{ t('Instruction4') if t('Instruction4') else 'Use the Emergency page to instantly notify assigned caretakers in urgent situations.' }}</li>
+            <li>{{ t('Instruction1') or 'Keep your account details secure and share login only with trusted caretakers.' }}</li>
+            <li>{{ t('Instruction2') or 'Ensure your medication schedule (time and dose) is accurate when adding medicines.' }}</li>
+            <li>{{ t('Instruction3') or 'Allow browser audio and notifications for reliable voice and on-screen alerts.' }}</li>
+            <li>{{ t('Instruction4') or 'Use the Emergency page to instantly notify assigned caretakers in urgent situations.' }}</li>
         </ul>
     </div>
 
     <div>
         <form method="post" action="{{ url_for('login') }}" class="form-box">
-                <label for="roleField">Role:</label>
-                <select id="roleField" name="role" title="Role selection">
-                        <option value="patient">Patient</option>
-                        <option value="caretaker">Caretaker</option>
-                </select>
 
-                <label>Email:</label>
-                <input type="email" id="emailField" name="email" required placeholder="you@example.com" title="Email address">
+            <label>Role:</label>
+            <select name="role">
+                <option value="patient">Patient</option>
+                <option value="caretaker">Caretaker</option>
+            </select>
 
-                <label>Password:</label>
-                <input type="password" id="passwordField" name="password" required placeholder="Password" title="Password">
+            <label>Email:</label>
+            <input type="email" name="email" required placeholder="you@example.com">
 
-                <div class="form-actions">
-                        <button type="submit" class="btn-primary">{{ t('Send OTP') }}</button>
-                        <a href="{{ url_for('register_patient') }}" class="link-btn">{{ t('Register Patient') }}</a>
-                        <a href="{{ url_for('register_caretaker') }}" class="link-btn">{{ t('Register Caretaker') }}</a>
-                </div>
+            <label>Password:</label>
+            <input type="password" name="password" required placeholder="Password">
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">{{ t('Send OTP') }}</button>
+                <a href="{{ url_for('register_patient') }}" class="link-btn">{{ t('Register Patient') }}</a>
+                <a href="{{ url_for('register_caretaker') }}" class="link-btn">{{ t('Register Caretaker') }}</a>
+            </div>
+
         </form>
     </div>
+
 </div>
+
 {% endblock %}
