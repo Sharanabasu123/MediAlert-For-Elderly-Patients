@@ -445,7 +445,7 @@ def login():
         }
         send_email(user.get("email"), "MediAlert Login OTP", f"Your login OTP is: {otp}")
         return render_template("verify_otp.html", role="login", email=user.get("email"))
-    return render_template("login.html")
+   return "Login Page Working"
 
 @app.route("/register_patient", methods=["GET", "POST"])
 def register_patient():
